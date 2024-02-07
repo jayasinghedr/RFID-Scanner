@@ -60,17 +60,18 @@ void loop()
     tft.println("Student Info");
 
     tft.drawRect(10, 40, 140, 80, ST7735_RED);
-    tft.setCursor(12, 55);
+    tft.setCursor(20, 55);
     tft.setTextColor(ST7735_BLACK);
     tft.println("Name: ");
     tft.println("ID: ");
     tft.setFont();
-    
-    delay(3000);
+
+    delay(1000);
+
     tft.fillScreen(ST7735_BLACK); 
   }
  
- else   {
+  else   {
     Serial.println(" Access denied");
     Serial.println();
     delay(1000);
