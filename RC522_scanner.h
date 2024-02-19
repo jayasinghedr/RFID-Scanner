@@ -1,5 +1,5 @@
-#ifndef RC522_SCANNER
-#define RC522_SCANNER
+#ifndef RC522_SCANNER_H
+#define RC522_SCANNER_H
 
 #include <SPI.h>
 #include <MFRC522.h>

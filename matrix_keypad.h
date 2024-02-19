@@ -1,5 +1,5 @@
-#ifndef MATRIX_KEYPAD
-#define MATRIX_KEYPAD
+#ifndef MATRIX_KEYPAD_H
+#define MATRIX_KEYPAD_H
 
 #include "Adafruit_Keypad.h"
 

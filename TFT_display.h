@@ -1,5 +1,5 @@
-#ifndef TFT_DISPLAY
-#define TFT_DISPLAY
+#ifndef TFT_DISPLAY_H
+#define TFT_DISPLAY_H
 
 #include <Adafruit_GFX.h>     // Include core graphics library
 #include <Adafruit_ST7735.h>  // Include Adafruit_ST7735 library to drive the display
@@ -60,7 +60,7 @@ void start_screen()
   tft.setFont(&FreeSansBold9pt7b);
   tft.setTextSize(0);  // Set text size. We are using custom font so you should always set text size as 0
   tft.setCursor(20, 80);  // Set position (x,-y)
-  tft.setTextColor(ST7735_WHITE);  // Set color of text. First is the color of text and after is color of background
+  tft.setTextColor(ST7735_BLACK);  // Set color of text. First is the color of text and after is color of background
   tft.println("Scan ID Here");  // Print a text or value
   tft.setFont();  // Reset to standard font, to stop using any custom font previously set
 }

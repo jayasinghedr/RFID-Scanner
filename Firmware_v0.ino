@@ -1,13 +1,17 @@
 #include "TFT_display.h"
 #include "RC522_scanner.h"
 #include "matrix_keypad.h"
+#include "WiFi_access.h"
  
 void setup() 
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   //Startup the display
   initialise_display();
+
+  //Connect to WiFI
+  initialise_WiFi();
 
   //Startup the RC522 RFID scanner
   initialise_RC522();
@@ -15,7 +19,7 @@ void setup()
   //initialise the matrix keypad
   customKeypad.begin();
 
-  tft.fillScreen(ST7735_BLACK);  // Fill screen
+  tft.fillScreen(ST7735_WHITE);  // Fill screen
 
 }
 
@@ -23,7 +27,7 @@ void loop()
 {
   start_screen();
 
-    customKeypad.tick();
+  customKeypad.tick();
 
   while(customKeypad.available()){
     keypadEvent e = customKeypad.read();
@@ -44,21 +48,25 @@ void loop()
   {
     return;
   }
+  
   //Show UID on serial monitor
   Serial.print("UID tag :");
   String content= "";
-  //byte letter;
+
   for (byte i = 0; i < mfrc522.uid.size; i++) 
   {
-     Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
-     Serial.print(mfrc522.uid.uidByte[i], HEX);
-     content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
+     /*add a 0 for hex values less than 0x10 (16)*/
+     if (mfrc522.uid.uidByte[i] < 0x10) {
+      content.concat("0");
+     }
      content.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
-  Serial.println();
-  Serial.print("Message : ");
+  
   content.toUpperCase();
-  if (content.substring(1) == "40 2A 87 1A") //change here the UID of the card/cards that you want to give access
+  Serial.println(content.substring(0));
+  
+  Serial.print("Message : ");
+  if (content == "402A871A") //change here the UID of the card/cards that you want to give access
   {
     Serial.println("Authorized access");
     Serial.println();
@@ -79,7 +87,7 @@ void loop()
 
     delay(1000);
 
-    tft.fillScreen(ST7735_BLACK); 
+    tft.fillScreen(ST7735_WHITE); 
   }
  
   else   {
