@@ -50,11 +50,27 @@ void initialise_display()
   delay(3000);
 }
 
+void battery_indicator ()
+{
+  // place battery charge level indicator at the top right corner
+  tft.fillRect(138, 5, 16, 10, 0x200F);
+  tft.fillRect(156, 8, 3, 4, 0x200F);
+
+  // battery percentage
+  tft.setCursor(140, 6);
+  tft.setTextColor(ST7735_WHITE);
+  tft.setTextSize(1);
+  tft.println("85%");
+}
+
 void start_screen()
 {
   //Draw an arrow
   tft.fillRect(76, 32, 8, 16, ST7735_RED);
   tft.fillTriangle(80, 16, 88, 32, 72, 32, ST7735_RED);
+
+  //put battery indicator
+  battery_indicator();
 
   //print scan message
   tft.setFont(&FreeSansBold9pt7b);
