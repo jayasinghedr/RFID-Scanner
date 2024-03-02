@@ -11,6 +11,8 @@
                               // in which case, set this #define pin to -1!
 #define TFT_CS      21        // Display enable (Chip select), if not enabled will not talk on SPI bus (GPIO 5)
 
+#define BAT_READ    34        // Analogue battery read
+
 // initialise the routine to talk to this display with these pin connections (as we've missed off
 // TFT_SCLK and TFT_MOSI the routine presumes we are using hardware SPI and internally uses MOSI - 23 and SCK - 18
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS,  TFT_DC, TFT_RST);
@@ -19,6 +21,9 @@ Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS,  TFT_DC, TFT_RST);
 #include <Fonts/FreeSerif18pt7b.h>  
 #include <Fonts/FreeSansBold12pt7b.h>
 #include <Fonts/FreeSansBold9pt7b.h>
+#include <Fonts/FreeMono9pt7b.h>
+
+int battery_val = 0;
 
 void initialise_display()
 {
@@ -53,24 +58,43 @@ void initialise_display()
 void battery_indicator ()
 {
   // place battery charge level indicator at the top right corner
-  tft.fillRect(138, 5, 16, 10, 0x200F);
-  tft.fillRect(156, 8, 3, 4, 0x200F);
+  tft.fillRect(134, 5, 21, 12, ST7735_BLUE);
+  tft.fillRect(155, 9, 3, 4, ST7735_BLUE);
 
   // battery percentage
-  tft.setCursor(140, 6);
+  tft.setCursor(136, 7);
   tft.setTextColor(ST7735_WHITE);
   tft.setTextSize(1);
   tft.println("85%");
+
+  //Serial.println(battery_val);
+  //delay(1000);
 }
 
-void start_screen()
+void class_id_screen() {
+  tft.fillScreen(ST7735_CYAN);  // Fill screen
+  
+  //Display text
+  tft.setFont(&FreeSansBold9pt7b);
+  tft.setTextSize(0);  // set text size to 0 for custom font
+  tft.setCursor(40, 30);  // Set position (x,-y)
+  tft.setTextColor(ST7735_BLACK);  // Set color of text
+  tft.println("Class ID");  // text
+  tft.setFont();  // Reset to standard font
+
+  tft.drawRect(40, 80, 80, 30, ST7735_MAGENTA);
+}
+
+void id_scan_screen()
 {
+  tft.fillScreen(ST7735_WHITE);  // Fill screen
+  
   //Draw an arrow
   tft.fillRect(76, 32, 8, 16, ST7735_RED);
   tft.fillTriangle(80, 16, 88, 32, 72, 32, ST7735_RED);
 
-  //put battery indicator
-  battery_indicator();
+  // put battery indicator
+  // battery_indicator();
 
   //print scan message
   tft.setFont(&FreeSansBold9pt7b);
@@ -79,6 +103,26 @@ void start_screen()
   tft.setTextColor(ST7735_BLACK);  // Set color of text. First is the color of text and after is color of background
   tft.println("Scan ID Here");  // Print a text or value
   tft.setFont();  // Reset to standard font, to stop using any custom font previously set
+}
+
+void student_info_screen()
+{
+  tft.fillScreen(ST7735_CYAN);  // Fill screen
+  tft.setFont(&FreeSansBold9pt7b);
+  tft.setTextSize(0);  // Set text size. We are using custom font so you should always set text size as 0
+  tft.setCursor(20, 20);  // Set position (x,-y)
+  tft.setTextColor(ST7735_BLUE);
+  tft.println("Student Info");
+  tft.setFont();
+
+  tft.drawRect(10, 40, 140, 80, ST7735_RED);
+  tft.setFont(&FreeMono9pt7b);
+  tft.setCursor(20, 55);
+  tft.setTextColor(ST7735_BLACK);
+  tft.println("Name: ");
+  tft.setCursor(20, 80);
+  tft.println("ID: ");
+  tft.setFont();
 }
 
 #endif
