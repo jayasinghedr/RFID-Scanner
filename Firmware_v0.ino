@@ -1,7 +1,7 @@
 #include "TFT_display.h"
 #include "RC522_scanner.h"
 #include "matrix_keypad.h"
-//#include "WiFi_access.h"
+#include "WiFi_access.h"
 
 // display screens
 #define START           0
@@ -10,13 +10,11 @@
 #define STUDENT_INFO    3
 #define DEFAULT_SCREEN  4
 
-#define CLASS_ID_LEN    4
+#define CLASS_ID_LEN    3
 
 int curr_screen = 0;  //indicates the current screen
-String class_id = ""; //store class ID from keypad
+//String class_id = ""; //store class ID from keypad
 int key_count = 0;
-
-uint32_t chip_id = 0;
  
 void setup() 
 {
@@ -26,7 +24,7 @@ void setup()
   initialise_display();
 
   //Connect to WiFI
-  // initialise_WiFi();
+  initialise_WiFi();
 
   //Startup the RC522 RFID scanner
   initialise_RC522();
@@ -88,26 +86,31 @@ void loop()
       //incorrect -> display invalid ID and go back to CLASS_ID screen
       if (key_count >= CLASS_ID_LEN) {
         delay(500);
-        if (class_id == "1234") {         
-          id_scan_screen();
-          curr_screen = ID_SCAN;  
 
-        } else {
-          tft.fillScreen(ST7735_CYAN);
+        // send class ID to the end point
+        if ((WiFi.status() == WL_CONNECTED)) {
+          if (send_class_id()) {   
+            //class_id is correct -> go to ID scan screen
+            id_scan_screen();
+            curr_screen = ID_SCAN; 
+          } else {
+            //class_id is wrong -> display error and stay in same screen
+            tft.fillScreen(ST7735_CYAN);
+            tft.setFont(&FreeSansBold9pt7b);
+            tft.setTextSize(0);  // set text size to 0 for custom font
+            tft.setCursor(10, 60);  // Set position (x,-y)
+            tft.setTextColor(ST7735_RED);  // Set color of text
+            tft.println("Invalid Class ID");  // text
+            tft.setFont();  // Reset to standard font
 
-          //display invalid class ID
-          tft.setFont(&FreeSansBold9pt7b);
-          tft.setTextSize(0);  // set text size to 0 for custom font
-          tft.setCursor(10, 60);  // Set position (x,-y)
-          tft.setTextColor(ST7735_RED);  // Set color of text
-          tft.println("Invalid Class ID");  // text
-          tft.setFont();  // Reset to standard font
-
-          delay(1500);
-
-          //go back to previous screen
-          class_id_screen();
+            delay(1500);
+            class_id_screen();
+          }
         }
+        else {
+          Serial.println("Connection lost");
+        }
+
         key_count = 0;
         class_id = "";
       }
