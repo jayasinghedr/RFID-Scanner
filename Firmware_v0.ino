@@ -1,3 +1,5 @@
+int curr_screen = 0;  //indicates the current screen
+
 #include "TFT_display.h"
 #include "RC522_scanner.h"
 #include "matrix_keypad.h"
@@ -5,15 +7,16 @@
 
 // display screens
 #define START           0
-#define CLASS_ID        1
-#define ID_SCAN         2
-#define STUDENT_INFO    3
-#define DEFAULT_SCREEN  4
+#define ACCESS_POINT    1
+#define CONNECTING      2
+#define READY           3
+#define CLASS_ID        4
+#define ID_SCAN         5
+#define STUDENT_INFO    6
+#define DEFAULT_SCREEN  7
 
 #define CLASS_ID_LEN    3
 
-int curr_screen = 0;  //indicates the current screen
-//String class_id = ""; //store class ID from keypad
 int key_count = 0;
  
 void setup() 
@@ -23,8 +26,72 @@ void setup()
   //Startup the display
   initialise_display();
 
+  initSPIFFS();
+  
+  // Load values saved in SPIFFS
+  ssid = readFile(SPIFFS, ssidPath);
+  pass = readFile(SPIFFS, passPath);
+
+  Serial.println(ssid);
+  Serial.println(pass);
+
+  if(initWiFi()) {
+    Serial.println("\nConnected to the WiFi network");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+    curr_screen = READY;  //device is ready
+  }
+  else {
+    access_point();
+    curr_screen = ACCESS_POINT;  //indicates the current screen
+
+    // Connect to Wi-Fi network with SSID and password
+    Serial.println("Setting AP (Access Point)");
+    // NULL sets an open Access Point
+    WiFi.softAP("ZeroCode-RFID", NULL);
+
+    IPAddress IP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(IP); 
+
+    // Web Server Root URL
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/wifimanager.html", "text/html");
+    });
+    
+    server.serveStatic("/", SPIFFS, "/");
+    
+    server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
+      int params = request->params();
+      for(int i=0;i<params;i++){
+        AsyncWebParameter* p = request->getParam(i);
+        if(p->isPost()){
+          // HTTP POST ssid value
+          if (p->name() == PARAM_INPUT_1) {
+            ssid = p->value().c_str();
+            Serial.print("SSID set to: ");
+            Serial.println(ssid);
+            // Write file to save value
+            writeFile(SPIFFS, ssidPath, ssid.c_str());
+          }
+          // HTTP POST pass value
+          if (p->name() == PARAM_INPUT_2) {
+            pass = p->value().c_str();
+            Serial.print("Password set to: ");
+            Serial.println(pass);
+            // Write file to save value
+            writeFile(SPIFFS, passPath, pass.c_str());
+          }
+        }
+      }
+      request->send(200, "text/plain", "Done. Device will restart");
+      delay(3000);
+      ESP.restart();
+    });
+    server.begin();
+  }
   //Connect to WiFI
-  initialise_WiFi();
+  //initialise_WiFi();
 
   //Startup the RC522 RFID scanner
   initialise_RC522();
@@ -66,7 +133,13 @@ void loop()
 
   //Screen and scanner state selection
   switch (curr_screen) {
-    case START: {
+    case START : {
+      ;
+    } break;
+    case ACCESS_POINT: {
+      ;
+    } break;
+    case READY: {
       class_id_screen();
 
       //get chip ID
