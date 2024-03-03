@@ -22,6 +22,7 @@ Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS,  TFT_DC, TFT_RST);
 #include <Fonts/FreeSansBold12pt7b.h>
 #include <Fonts/FreeSansBold9pt7b.h>
 #include <Fonts/FreeMono9pt7b.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
 
 int battery_val = 0;
 
@@ -53,6 +54,24 @@ void initialise_display()
   tft.setFont();  // Reset to standard font, to stop using any custom font previously set
 
   delay(3000);
+}
+
+void access_point () {
+  //display this screen when the device works as an access point
+  tft.fillScreen(ST7735_GREEN);  // Fill screen
+
+  tft.setFont(&FreeMonoBold9pt7b);
+  tft.setCursor(20, 30);
+  tft.setTextColor(ST7735_RED);
+  tft.println("No WiFi!");
+  tft.setFont();
+
+  tft.setFont(&FreeMono9pt7b);
+  tft.setCursor(20, 50);
+  tft.setTextColor(ST7735_BLACK);
+  tft.println("HotSpot Mode ON");
+  tft.setFont();
+
 }
 
 void battery_indicator ()
